@@ -10,13 +10,13 @@ const Cards = (props) => {
     }, []);
 
     return (
-        <div>
+        <div className="interact">
             {
             !loadScreen ?
             <div className="cardBox">
                 {heros.map((hero) => {
                     return <div
-                        style={{ backgroundImage: `url(${hero.url})` }}
+                        style={{ backgroundImage: `url(${hero.url}), url("https://via.placeholder.com/300x300?text=Failed To Load")`}} 
                         className="individualCard"
                         key={hero.id}
                         id={hero.id}
@@ -27,7 +27,7 @@ const Cards = (props) => {
                 })}
             </div>
             :
-            <div>Loading</div>
+            <div>Loading...</div>
             }
         </div>
     )

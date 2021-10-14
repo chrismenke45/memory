@@ -2,6 +2,11 @@ import React, { useState } from 'react'
 import Cards from './components/Cards'
 import ScoreDisplay from './components/ScoreDisplay';
 import NewGame from './components/NewGame';
+import shuffleArray from './functions/shuffleArray';
+import heroFetch from './functions/heroFetch';
+import randomIdArrayGen from './functions/randomIdArrayGen';
+import randomHeroId from './functions/randomHeroId';
+import GetNewHeros from './components/GetNewHeros';
 const API_KEY = process.env.REACT_APP_API_KEY;
 
 function App() {
@@ -15,36 +20,12 @@ function App() {
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
   const [game, setGame] = useState(true)
+  const [allHerosClicked, setAllHerosClicked] = useState(false)
 
-  let idMax = 271;
-  const randomHeroId = (idMax) => {
-    return Math.floor(Math.random() * idMax)
-  }
+  let idMax = 270;
 
-  const randomIdArrayGen = (arrayLength, idMax) => {
-    let idArray = []
-    for (let i = 0; i <= arrayLength - 1; i++) {
-      let id;
-      do {
-        id = randomHeroId(idMax)
-      } while (idArray.includes(id))
-      idArray[i] = id;
-    }
-    return idArray;
-  }
-
-  async function heroFetch(apiKey, idNum) {
-    const response = await fetch(`https://www.superheroapi.com/api.php/${apiKey}/${idNum}`);
-    const hero = await response.json();
-    return {
-      id: hero.id,
-      heroName: hero.name,
-      url: hero.image.url,
-      clicked: false
-    }
-  }
   const cardMount = () => {
-    let heroIdArray = randomIdArrayGen(16, idMax);
+    let heroIdArray = randomIdArrayGen(16, idMax, randomHeroId);
     Promise.all(heroIdArray.map(id => {
       return heroFetch(API_KEY, id)
     }))
@@ -54,19 +35,9 @@ function App() {
         setLoadScreen(false)
       })
       .catch(error => {
-        alert('API not working, try reloading page')
+        alert('There was a problem loading heros, please reload the page')
         console.error(error.message)
       })
-  }
-
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-      let t = array[i];
-      array[i] = array[j];
-      array[j] = t;
-    }
-    return array;
   }
 
   const onChoice = (e) => {
@@ -95,30 +66,33 @@ function App() {
       if (score + 1 >= highScore) {
         setHighScore(score + 1);
       }
-      console.log(heros)
+      if ((score + 1) % 16 == 0) {
+        setAllHerosClicked(true)
+      }
     }
   }
   const startGame = () => {
     setGame(true)
+    setLoadScreen(true)
   }
-  /*const mountCards = () => {
-    setMount(true);
+  const onContinue = () => {
+    setAllHerosClicked(false)
+    setLoadScreen(true)
   }
-  const unmountCards = () => {
-    setMount(false);
-  }*/
 
   return (
-    <div>
+    <div className="allSpace">
+      <h1 className="title">Test Your Memory</h1>
+      <p className="instructions">Don't pick the same hero twice!</p>
       <ScoreDisplay score={score} highScore={highScore} />
-      {/*<button onClick={mountCards}>mount</button>
-      <button onClick={unmountCards}>unmount</button>
-  {mount ? <Cards heros={heros} onChoice={onChoice} cardMount={cardMount} /> : null}*/}
       {
-      game ?
-       <Cards heros={heros} loadScreen={loadScreen} onChoice={onChoice} cardMount={cardMount} /> 
-       :
-       <NewGame startGame={startGame} />
+        game ?
+          !allHerosClicked ?
+            <Cards heros={heros} loadScreen={loadScreen} onChoice={onChoice} cardMount={cardMount} />
+            :
+            <GetNewHeros onContinue={onContinue} />
+          :
+          <NewGame startGame={startGame} />
       }
     </div>
 
