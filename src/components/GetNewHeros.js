@@ -1,5 +1,5 @@
 import React from 'react'
-
+//similar to NewGame, it allows for the heros to be reloaded after all have been cleared
 const GetNewHeros = (props) => {
     const { onContinue } = props;
     return (
